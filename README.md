@@ -10,7 +10,7 @@
 1. Clone this repository using Git:
 
 ```
-git clone git@github.com:AnthonyAposta/GenerativeModels.git
+git clone git@github.com:AnthonyAposta/sidewall-coring-detection.git
 ```
 
 2. Install dependencies using poetry:
