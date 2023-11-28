@@ -56,15 +56,17 @@ class CoringDetector(BaseEstimator, TransformerMixin):
         self.all_transforms["closing"] = images
 
         # Aplicando abertura com kernel vertical para remover ruidos horizontais
-        kernel2 = np.ones((self.N2, 1), np.uint8)
-        images = [cv2.morphologyEx(img, cv2.MORPH_OPEN, kernel2) for img in images]
-        self.all_transforms["open"] = images
+        # kernel2 = np.ones((self.N2, 1), np.uint8)
+        # images = [cv2.morphologyEx(img, cv2.MORPH_OPEN, kernel2) for img in images]
+        # self.all_transforms["open"] = images
 
         # Aplicando dilatação para juntar ruidos proximos em grandes regiões, pode facilitar
         # na filtragem por área, mas talvez não seja necessario.
-        kernel3 = np.ones((self.N3, self.N3), np.uint8)
-        images = [cv2.morphologyEx(img, cv2.MORPH_DILATE, kernel3) for img in images]
-        self.all_transforms["dilate"] = images
+        # kernel3 = np.ones((self.N3, self.N3), np.uint8)
+        # images = [cv2.morphologyEx(img, cv2.MORPH_DILATE, kernel3) for img in images]
+        # self.all_transforms["dialate"] = images
+
+        self.all_transforms["output"] = images
 
         return images
 
@@ -186,12 +188,12 @@ class CoringDetector(BaseEstimator, TransformerMixin):
                 f"true_centroids and predicted_centroids have incompatible lengths: {len(true_centroids)} and {len(predicted_centroids)}."
             )
 
-        true_positives = 0
-        false_positives = 0
-        false_negatives = 0
-        precision = 0
-        recall = 0
-        f1_score = 0
+        self.true_positives = 0
+        self.false_positives = 0
+        self.false_negatives = 0
+        self.precision = 0
+        self.recall = 0
+        self.f1_score = 0
 
         for i in range(len(true_centroids)):
             for pred_centroid in predicted_centroids[i]:
@@ -202,37 +204,43 @@ class CoringDetector(BaseEstimator, TransformerMixin):
                         match_found = True
                         break
                 if match_found:
-                    true_positives += 1
+                    self.true_positives += 1
                 else:
-                    false_positives += 1
+                    self.false_positives += 1
 
-        false_negatives = len(true_centroids) - true_positives
+        self.false_negatives = len(true_centroids) - self.true_positives
 
-        if true_positives + false_positives > 0:
-            precision = true_positives / (true_positives + false_positives)
+        if self.true_positives + self.false_positives > 0:
+            self.precision = self.true_positives / (
+                self.true_positives + self.false_positives
+            )
 
-        if (true_positives + false_negatives) > 0:
-            recall = true_positives / (true_positives + false_negatives)
+        if (self.true_positives + self.false_negatives) > 0:
+            self.recall = self.true_positives / (
+                self.true_positives + self.false_negatives
+            )
 
-        if (precision + recall) > 0:
-            f1_score = 2 * (precision * recall) / (precision + recall)
+        if (self.precision + self.recall) > 0:
+            self.f1_score = (
+                2 * (self.precision * self.recall) / (self.precision + self.recall)
+            )
 
-        true_positives_rate = true_positives / len(true_centroids)
-        false_positives_rate = false_positives / len(true_centroids)
-        false_negatives_rate = false_negatives / len(true_centroids)
+        self.true_positives_rate = self.true_positives / len(true_centroids)
+        self.false_positives_rate = self.false_positives / len(true_centroids)
+        self.false_negatives_rate = self.false_negatives / len(true_centroids)
 
         if self.metric == "precision":
-            return precision
+            return self.precision
         elif self.metric == "recall":
-            return recall
+            return self.recall
         elif self.metric == "f1_score":
-            return f1_score
+            return self.f1_score
         elif self.metric == "TP":
-            return true_positives_rate
+            return self.true_positives_rate
         elif self.metric == "FP":
-            return false_positives_rate
+            return self.false_positives_rate
         elif self.metric == "FN":
-            return false_negatives_rate
+            return self.false_negatives_rate
         else:
             raise Exception(
                 f"{self.metric} is not valid. Valid metrics are 'precision', 'recall', 'f1_socore'"

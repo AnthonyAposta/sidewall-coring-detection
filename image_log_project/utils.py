@@ -5,7 +5,11 @@ from math import ceil
 
 
 def plot_images(
-    images: list, contours_list: np.array = None, centroids: list = None, n=16
+    images: list,
+    contours_list: np.array = None,
+    pred_centroids: list = None,
+    true_centroids: list = None,
+    n=16,
 ):
     images = images[:n]
 
@@ -38,9 +42,16 @@ def plot_images(
             cv2.drawContours(
                 image, img_contours, -1, (0, 255, 0), 2
             )  # -1 means draw all contours, (0, 255, 0) is the color, 2 is the thickness
-        if centroids is not None:
-            for cntr in centroids[i]:
-                cv2.circle(image, cntr, radius=3, color=(0, 0, 255), thickness=-1)
+
+        # red
+        if pred_centroids is not None:
+            for cntr in pred_centroids[i]:
+                cv2.circle(image, cntr, radius=5, color=(255, 0, 0, 100), thickness=2)
+
+        # green
+        if true_centroids is not None:
+            for cntr in true_centroids[i]:
+                cv2.circle(image, cntr, radius=5, color=(0, 255, 0, 100), thickness=2)
 
         ax[i].imshow(image)
 
