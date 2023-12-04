@@ -36,22 +36,27 @@ def plot_images(
 
         image = img.copy()
         image = image.astype("uint8")
-        image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
+        image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGRA)
         if contours_list is not None:
             img_contours = contours_list[i]
             cv2.drawContours(
-                image, img_contours, -1, (0, 255, 0), 2
+                image, img_contours, -1, (0, 255, 0, 255), 2
             )  # -1 means draw all contours, (0, 255, 0) is the color, 2 is the thickness
 
         # red
         if pred_centroids is not None:
             for cntr in pred_centroids[i]:
-                cv2.circle(image, cntr, radius=5, color=(255, 0, 0, 100), thickness=2)
+                cv2.circle(
+                    image, cntr, radius=3, color=(255, 0, 0, 255), thickness=cv2.FILLED
+                )
 
         # green
+        L = 20
         if true_centroids is not None:
             for cntr in true_centroids[i]:
-                cv2.circle(image, cntr, radius=5, color=(0, 255, 0, 100), thickness=2)
+                p1 = (cntr[0] - L // 2, cntr[1] - L // 2)
+                p2 = (cntr[0] + L // 2, cntr[1] + L // 2)
+                cv2.rectangle(image, p1, p2, color=(0, 255, 0, 255), thickness=2)
 
         ax[i].imshow(image)
 

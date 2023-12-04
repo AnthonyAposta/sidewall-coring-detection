@@ -66,8 +66,6 @@ class CoringDetector(BaseEstimator, TransformerMixin):
         # images = [cv2.morphologyEx(img, cv2.MORPH_DILATE, kernel3) for img in images]
         # self.all_transforms["dialate"] = images
 
-        self.all_transforms["output"] = images
-
         return images
 
     @staticmethod
@@ -105,18 +103,21 @@ class CoringDetector(BaseEstimator, TransformerMixin):
         em algumas propriedades.
         """
 
+        self.contour_areas = []
+        self.roundness = []
+
         filtered_contours = []
         for contours_list in contours:
             new_contours_list = []
             for cntr in contours_list:
                 area = cv2.contourArea(cntr)
-                # contour_areas.append(area)
+                self.contour_areas.append(area)
 
                 arclength = cv2.arcLength(cntr, True)
                 # arclengths.append(arclength)
 
                 round_ratio = 4 * np.pi * area / (arclength**2)
-                # roundness.append(round_ratio)
+                self.roundness.append(round_ratio)
 
                 if (
                     (round_ratio < self.max_round_ratio)
@@ -132,7 +133,7 @@ class CoringDetector(BaseEstimator, TransformerMixin):
 
     def get_filtered_blobs(self, filtered_contours: list):
         """
-        Usa os contornos filtrados para gerar a imges finais
+        Usa os contornos filtrados para gerar a images finais
         que representam os boreholes.
         """
 
@@ -146,6 +147,7 @@ class CoringDetector(BaseEstimator, TransformerMixin):
                 image, img_contours, -1, (255, 255, 255), cv2.FILLED
             )  # -1 means draw all contours, (0, 255, 0) is the color, 2 is the thickness
 
+        self.all_transforms["output"] = masks
         return masks
 
     @staticmethod
@@ -170,6 +172,8 @@ class CoringDetector(BaseEstimator, TransformerMixin):
         contours = self.find_contours(transformed_images)
         filtered_contours = self.apply_thresholds(contours)
         centroids_pred = self.get_centroids(filtered_contours)
+
+        self.contours = filtered_contours
 
         return centroids_pred
 
